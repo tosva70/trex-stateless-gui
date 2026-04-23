@@ -24,6 +24,7 @@ mkdir -p "${HOME}/.trex-gui"
 echo "Starting TRex GUI..."
 podman run --rm \
   --name trex-gui \
+  --net=host \
   --security-opt label=disable \
   -e DISPLAY="${DISPLAY}" \
   -e XAUTHORITY=/tmp/.Xauthority \
