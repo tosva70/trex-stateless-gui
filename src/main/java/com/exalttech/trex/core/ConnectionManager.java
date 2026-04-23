@@ -476,30 +476,24 @@ public class ConnectionManager {
         LogsController.getInstance().appendText(LogType.INFO, "Connecting to Trex async port: " + address);
         final String[] error = {null};
         try {
-            runAndWait(() -> {
-                try {
-                    ZMQ.Socket subscriber = context.createSocket(ZMQ.SUB);
-                    subscriber.setReceiveTimeOut(timeout);
-                    subscriber.connect(address);
-                    subscriber.subscribe(ZMQ.SUBSCRIPTION_ALL);
+            ZMQ.Socket subscriber = context.createSocket(ZMQ.SUB);
+            subscriber.setReceiveTimeOut(timeout);
+            subscriber.connect(address);
+            subscriber.subscribe(ZMQ.SUBSCRIPTION_ALL);
 
-                    String res;
-                    try {
-                        res = this.dataCompressor.decompressBytesToString(subscriber.recv());
-                        if (res != null) {
-                            handleAsyncResponse(res);
-                        } else {
-                            error[0] = "Error while verifing the Async request: " + "No response from server";
-                        }
-                    } catch (Exception e) {
-                        error[0] = "Error while verifing the Async request: " + e.getMessage();
-                    }
-                    context.destroySocket(subscriber);
-                } catch (Exception e) {
-                    error[0] = "Error while verifing the Async request: " + e.getMessage();
+            String res;
+            try {
+                res = this.dataCompressor.decompressBytesToString(subscriber.recv());
+                if (res != null) {
+                    handleAsyncResponse(res);
+                } else {
+                    error[0] = "Error while verifing the Async request: " + "No response from server";
                 }
-            });
-        } catch (InterruptedException e) {
+            } catch (Exception e) {
+                error[0] = "Error while verifing the Async request: " + e.getMessage();
+            }
+            context.destroySocket(subscriber);
+        } catch (Exception e) {
             error[0] = "Error while verifing the Async request: " + e.getMessage();
         }
         if (error[0] == null) {

@@ -37,7 +37,7 @@ import com.exalttech.trex.util.Util;
 import com.exalttech.trex.util.files.FileManager;
 import com.exalttech.trex.util.files.FileType;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
