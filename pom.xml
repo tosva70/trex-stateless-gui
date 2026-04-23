@@ -37,7 +37,7 @@
         <repository>
             <id>Sonatype-public</id>
             <name>SnakeYAML repository</name>
-            <url>http://oss.sonatype.org/content/groups/public/</url>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
@@ -49,35 +49,100 @@
         <finalName>trex-stateless-gui</finalName>
         <plugins>
             <plugin>
-                <groupId>com.zenjava</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>8.5.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
-                    <vendor>Cisco Systems</vendor>
-                    <mainClass>com.exalttech.trex.application.TrexApp</mainClass>
-                    <icon>${basedir}/src/main/resources/images/trex-app.ico</icon>
-                    <verbose>true</verbose>
+                    <source>11</source>
+                    <target>11</target>
+                    <compilerArgs>
+                        <arg>--add-exports=javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED</arg>
+                    </compilerArgs>
                 </configuration>
-                
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>${mainClass}</mainClass>
+                    <jvmArguments>
+                        <jvmArgument>--add-modules=javafx.controls,javafx.fxml,javafx.graphics,javafx.base,javafx.swing</jvmArgument>
+                        <jvmArgument>--add-opens=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED</jvmArgument>
+                        <jvmArgument>--add-opens=javafx.controls/com.sun.javafx.scene.control.skin=ALL-UNNAMED</jvmArgument>
+                    </jvmArguments>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration> 
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.dll</exclude>
+                    <exclude>**/*.so</exclude>
+                    <exclude>**/*.dylib</exclude>
+                    <exclude>**/*.ico</exclude>
+                    <exclude>**/*.png</exclude>
+                    <exclude>**/*.gif</exclude>
+                    <exclude>**/*.jpg</exclude>
+                    <exclude>**/*.pcap</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.dll</include>
+                    <include>**/*.so</include>
+                    <include>**/*.dylib</include>
+                    <include>**/*.ico</include>
+                    <include>**/*.png</include>
+                    <include>**/*.gif</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.pcap</include>
+                </includes>
             </resource>
         </resources>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>21</version>
+        </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
@@ -89,14 +154,14 @@
             <version>4.4.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.cisco-system-traffic-generator</groupId>
-            <artifactId>trex-packet-editor</artifactId>
-            <version>d051fc1</version>
+            <groupId>com.xored</groupId>
+            <artifactId>TRexPacketCraftingTool</artifactId>
+            <version>1.01</version>
         </dependency>
         <dependency>
-            <groupId>com.github.cisco-system-traffic-generator</groupId>
+            <groupId>com.cisco.trex</groupId>
             <artifactId>trex-java-sdk</artifactId>
-            <version>70a5da7</version>
+            <version>1.71</version>
         </dependency>
         <dependency>
             <groupId>org.pcap4j</groupId>
@@ -121,18 +186,23 @@
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.20</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.6.0</version>
+            <version>2.15.4</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.6.0</version>
+            <version>2.15.4</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.5.4</version>
+            <version>2.15.4</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -142,7 +212,7 @@
         <dependency>
             <groupId>org.zeromq</groupId>
             <artifactId>jeromq</artifactId>
-            <version>0.4.0</version>
+            <version>0.5.1</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -158,7 +228,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>1.7.1</version>
+            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -192,6 +262,37 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.9</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.arteam</groupId>
+            <artifactId>simple-json-rpc-client</artifactId>
+            <version>0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>23.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

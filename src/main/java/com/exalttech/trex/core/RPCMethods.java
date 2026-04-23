@@ -15,7 +15,6 @@
  */
 package com.exalttech.trex.core;
 
-import com.cisco.trex.stateless.model.RPCResponse;
 import com.exalttech.trex.remote.exceptions.IncorrectRPCMethodException;
 import com.exalttech.trex.remote.exceptions.InvalidRPCResponseException;
 import com.exalttech.trex.remote.exceptions.PortAcquireException;
@@ -50,8 +49,8 @@ import java.util.logging.Level;
 public class RPCMethods {
 
     private static final Logger LOG = Logger.getLogger(RPCMethods.class.getName());
-    private static final int API_VERSION_MAJOR = 4;
-    private static final int API_VERSION_MINOR = 0;
+    private static final int API_VERSION_MAJOR = 5;
+    private static final int API_VERSION_MINOR = 1;
     private static final String API_VERSION_TYPE = "core";
     private HashMap connectionHandler = new HashMap();
     private final ConnectionManager serverConnectionManager = ConnectionManager.getInstance();
@@ -79,8 +78,7 @@ public class RPCMethods {
             String response = serverConnectionManager.sendRPCRequest(Constants.ACQUIRE_METHOD, acquireParams);
             response = Util.removeFirstBrackets(response);
 
-            RPCResponse rpcResult = mapper.readValue(response, RPCResponse.class);
-            String handler = mapper.readValue(rpcResult.getResult(), String.class);
+            String handler = mapper.readTree(response).path("result").asText();
             connectionHandler.put(portID, handler);
             serverConnectionManager.propagatePortHandler(portID, handler);
             return handler;

@@ -1,11 +1,10 @@
 package com.exalttech.trex.core;
 
-import com.cisco.trex.stateless.model.RPCResponseError;
 import com.cisco.trex.stateless.model.stats.ActivePGIdsRPCResult;
 import com.cisco.trex.stateless.model.stats.PGIdStatsRPCResult;
-import com.cisco.trex.stateless.model.RPCResponse;
 import com.cisco.trex.stateless.model.stats.Utilization;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -54,23 +53,18 @@ public class RPCCommands {
             stringParameters = jsonParameters.substring(1, jsonParameters.length() - 1);
         }
         final String jsonRPCResult = ConnectionManager.getInstance().sendRequest(command, stringParameters);
-        final RPCResponse rpcResult = new ObjectMapper().readValue(jsonRPCResult, RPCResponse.class);
-        final String specError = extractSpecError(rpcResult);
-        final String invalidHandlerErrorPart = "API handler provided mismatch";
-
-        if (specError.contains(invalidHandlerErrorPart)) {
-            ConnectionManager.getInstance().notifyServerWasRestarted();
+        final JsonNode root = new ObjectMapper().readTree(jsonRPCResult);
+        final JsonNode errorNode = root.path("error");
+        if (!errorNode.isMissingNode() && !errorNode.isNull()) {
+            final String specError = errorNode.path("specific_err").asText("");
+            if (specError.contains("API handler provided mismatch")) {
+                ConnectionManager.getInstance().notifyServerWasRestarted();
+            }
         }
-
-        return rpcResult.getResult();
-    }
-
-    private static String extractSpecError(final RPCResponse resp) {
-        final RPCResponseError err = resp.getError();
-        if (err != null) {
-            return err.getSpecificErr();
+        final JsonNode resultNode = root.path("result");
+        if (resultNode.isMissingNode() || resultNode.isNull()) {
+            return null;
         }
-
-        return "";
+        return resultNode.isTextual() ? resultNode.asText() : resultNode.toString();
     }
 }

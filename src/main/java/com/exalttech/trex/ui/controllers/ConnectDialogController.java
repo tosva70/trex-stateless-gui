@@ -81,17 +81,16 @@ public class ConnectDialogController extends DialogView implements Initializable
         public Void call() {
             final ConnectionManager connectionManager = ConnectionManager.getInstance();
             String error = null;
-            boolean connected = false;
             final int ms = 1000;
 
             try {
-                connected = connectionManager.initializeConnection(ip, rpcPort, asyncPort, scapyPort, timeout * ms, name, isReadOnly);
-            } catch (Exception e) {
-                error = e.getMessage();
-            }
-
-            if (connected && !connectionManager.testConnection(false) || !connectionManager.testConnection(true)) {
-                error = "Failed to connect to TRex - make sure the server is up";
+                boolean connected = connectionManager.initializeConnection(ip, rpcPort, asyncPort, scapyPort, timeout * ms, name, isReadOnly);
+                if (connected && !connectionManager.testConnection(false) || !connectionManager.testConnection(true)) {
+                    error = "Failed to connect to TRex - make sure the server is up";
+                }
+            } catch (Throwable e) {
+                e.printStackTrace(System.err);
+                error = e.getClass().getSimpleName() + ": " + e.getMessage();
             }
             acceptCallback(error);
             return null;
