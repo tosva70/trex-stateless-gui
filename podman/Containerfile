@@ -1,0 +1,43 @@
+# ── Stage 1: build ────────────────────────────────────────────────────────────
+# Run "podman build" from the parent directory containing both
+# trex-java-sdk/ and trex-stateless-gui/.
+FROM docker.io/library/maven:3.9.6-eclipse-temurin-21 AS builder
+
+WORKDIR /build
+
+# Build the locally-modified SDK first and install it into the local Maven repo
+COPY trex-java-sdk/ ./trex-java-sdk/
+RUN mvn -f trex-java-sdk/pom.xml install -DskipTests -Dgpg.skip=true -q
+
+# Build the packet editor and install it into the local Maven repo
+COPY trex-packet-editor/ ./trex-packet-editor/
+RUN mvn -f trex-packet-editor/pom.xml install -DskipTests -q
+
+# Build the GUI against the locally-installed SDK and packet editor
+COPY trex-stateless-gui/ ./trex-stateless-gui/
+RUN mvn -f trex-stateless-gui/pom.xml package -DskipTests -q
+RUN mvn -f trex-stateless-gui/pom.xml dependency:copy-dependencies \
+        -DoutputDirectory=/build/trex-stateless-gui/target/lib -q
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM docker.io/library/almalinux:10
+
+# Java 21 runtime + libraries required by OpenJFX native code + X11 client
+RUN dnf install -y \
+        java-21-openjdk \
+        mesa-libGL \
+        libX11 libXext libXrender libXtst libXi \
+        freetype fontconfig \
+    && dnf clean all
+
+WORKDIR /app
+
+# Copy compiled artifacts from the builder stage
+COPY --from=builder /build/trex-stateless-gui/target/trex-stateless-gui.jar ./
+COPY --from=builder /build/trex-stateless-gui/target/lib/ ./lib/
+
+# Entrypoint script — same JVM flags as the working run.sh
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
