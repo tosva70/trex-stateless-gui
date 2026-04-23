@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs inside the container. Passes DISPLAY through from the host.
 exec java \
-  -p /app/lib \
+  -p /app/javafx \
   --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base,javafx.swing \
   --add-opens  javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED \
   --add-opens  javafx.controls/javafx.scene.control=ALL-UNNAMED \

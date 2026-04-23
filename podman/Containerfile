@@ -36,6 +36,10 @@ WORKDIR /app
 COPY --from=builder /build/trex-stateless-gui/target/trex-stateless-gui.jar ./
 COPY --from=builder /build/trex-stateless-gui/target/lib/ ./lib/
 
+# Separate JavaFX JARs onto their own module path to avoid duplicate-module
+# errors when non-JavaFX JARs (e.g. two jaxb-api versions) are also present.
+RUN mkdir /app/javafx && mv /app/lib/javafx-*.jar /app/javafx/
+
 # Entrypoint script — same JVM flags as the working run.sh
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh
