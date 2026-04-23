@@ -13,19 +13,21 @@ if [ -z "${DISPLAY}" ]; then
   exit 1
 fi
 
-# Allow the container's root user to connect to the local X server.
-# (xhost must be available on the host; skip if you manage XAUTHORITY manually.)
+# Grant local X11 access and pass the auth cookie into the container.
 if command -v xhost &>/dev/null; then
-  xhost +local:root >/dev/null 2>&1 || true
+  xhost +local: >/dev/null 2>&1 || true
 fi
 
+XAUTH_FILE="${XAUTHORITY:-${HOME}/.Xauthority}"
+
+mkdir -p "${HOME}/.trex-gui"
 echo "Starting TRex GUI..."
 podman run --rm \
   --name trex-gui \
+  --security-opt label=disable \
   -e DISPLAY="${DISPLAY}" \
+  -e XAUTHORITY=/tmp/.Xauthority \
   -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+  -v "${XAUTH_FILE}:/tmp/.Xauthority:ro" \
   -v "${HOME}/.trex-gui:/root/.trex-gui" \
   "${IMAGE}"
-
-# The -v ~/.trex-gui:/root/.trex-gui line persists saved connections across
-# container runs. The directory is created automatically by Podman if absent.
